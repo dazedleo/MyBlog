@@ -34,6 +34,7 @@ class User(models.Model):
     last_name = models.CharField(max_length=50, blank=True, null=True)
     password = models.CharField(max_length=128)
     role = models.ForeignKey(Roles, on_delete=models.CASCADE, null=True, related_name="user_role")    
+    is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
