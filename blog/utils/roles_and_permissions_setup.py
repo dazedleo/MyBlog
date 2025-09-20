@@ -64,7 +64,6 @@ roles_permissions = {
         "approve_publish_posts",
         "edit_others_posts",
         "moderate_comments",
-        "manage_users",
         "manage_site_settings",
     ]
 }
