@@ -77,4 +77,4 @@ for role_name, perm_list in roles_permissions.items():
         perm_obj, _ = permissions.objects.get_or_create(permission=perm_name)
         role_obj.permissions.add(perm_obj)
 
-print("Roles and permissions have been created and assigned successfully")
+print("Roles and permissions have been created and assigned successfully!")
