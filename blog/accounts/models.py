@@ -30,6 +30,8 @@ class User(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(unique=True)
+    mobile = models.CharField(max_length=15, unique=True, blank=True, null=True)
+    country_code = models.CharField(max_length=5, unique=True, blank=True, null=True, default='+91')
     first_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50, blank=True, null=True)
     password = models.CharField(max_length=128)
