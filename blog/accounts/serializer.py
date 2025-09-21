@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from accounts.models import User
+from accounts.models import User, Roles
 
 
 class UserProfileCreateSerializer(serializers.ModelSerializer):

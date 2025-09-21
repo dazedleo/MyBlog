@@ -10,22 +10,24 @@ def get_tokens_for_user(user):
         'user_id': user.id,
         'full_name': f'{user.first_name or ''} {user.last_name or ''}'.strip(),
         'mobile': user.mobile,
+        'role':user.role.role_name,
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     }
 
-# def get_access_token_from_refresh(refresh_token_str):
-#     try:
-#         refresh = RefreshToken(refresh_token_str)
+def get_access_token_from_refresh(refresh_token_str):
+    try:
+        refresh = RefreshToken(refresh_token_str)
         
-#         # Generate a new access token
-#         new_access_token = str(refresh.access_token)
+        # Generate a new access token
+        new_access_token = str(refresh.access_token)
         
-#         return {
-#             'access': new_access_token
-#         }
-#     except TokenError as e:
-#         return {
-#             'error': 'Invalid or expired refresh token',
-#             'details': str(e)
-#         }
+        return {
+            'access': new_access_token,
+            'refresh_valid': True
+        }
+    except TokenError as e:
+        return {
+            'error': 'Invalid or expired refresh token',
+            'refresh_valid': False
+        }
