@@ -1,9 +1,9 @@
-from accounts.models import User
+from accounts.models import User, Roles
 
 from rest_framework import status, viewsets
 
 from utils.global_utils import validate_fields, create_response
-from blogapp.authentication import get_tokens_for_user
+from blogapp.authentication import get_tokens_for_user, get_access_token_from_refresh
 
 from accounts.serializer import UserProfileCreateSerializer
 
@@ -20,6 +20,7 @@ class SignupWithPassword(viewsets.ViewSet):
             mobile = data.get('mobile')
             country_code = data.get('country_code')
             email = data.get('email')
+            role_name = data.get('role_name')
             password = data.get('password')
 
             validation_fields = {
@@ -39,16 +40,50 @@ class SignupWithPassword(viewsets.ViewSet):
                     message=response
                 )
             
+            role_obj = Roles.objects.filter(role_name=role_name).first()
+            
+            if not role_obj:
+                return create_response(
+                    status=status.HTTP_404_NOT_FOUND,
+                    message="Invalid role name"
+                )
+            
+            data['role'] = role_obj.id
+            
+            if User.objects.filter(username=user_name).exists():
+                return create_response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    message="username already exists"
+                )
+            
+            if User.objects.filter(email=email).exists():
+                return create_response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    message="E-mail already exists"
+                )
+            
+            if User.objects.filter(mobile=mobile).exists():
+                return create_response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    message="Mobile already exists"
+                )
+            
             serialized_user_obj = UserProfileCreateSerializer(data=data)
             if serialized_user_obj.is_valid():
                 user = serialized_user_obj.save()
                 token = get_tokens_for_user(user) 
-            
-            return create_response(
-                message="User created Successfully",
-                status=status.HTTP_201_CREATED, 
-                result=token
-            )
+
+                return create_response(
+                    message="User created Successfully",
+                    status=status.HTTP_201_CREATED, 
+                    result=token
+                )
+
+            else:
+                return create_response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    message=serialized_user_obj.errors
+                )
             
         except Exception as e:
             return create_response(
@@ -62,8 +97,9 @@ class LoginWithPassword(viewsets.ViewSet):
             mobile = request.data.get("mobile")
             country_code = request.data.get("country_code")
             password = request.data.get("password")
+            refresh = request.data.get("refresh")
 
-            user_obj = User.objects.get(mobile=mobile, country_code=country_code, is_deleted=False)
+            user_obj = User.objects.filter(mobile=mobile, country_code=country_code, is_deleted=False).first()
             if not user_obj:
                 return create_response(
                     status=status.HTTP_404_NOT_FOUND,
@@ -76,12 +112,15 @@ class LoginWithPassword(viewsets.ViewSet):
                     message="Invalid Password"
                 )
             
-            token = get_tokens_for_user(user_obj)
+            token = get_access_token_from_refresh(refresh)
+
+            if not token['refresh_valid']:
+                token = get_tokens_for_user(user_obj)
             
             return create_response(
                 status=status.HTTP_200_OK,
                 message="User Logged in Successfully",
-                result=token
+                result={"access_token":token['access']}
             )
 
         except Exception as e:
